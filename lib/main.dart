@@ -7,6 +7,7 @@ import 'data/entry_repository.dart';
 import 'data/settings.dart';
 import 'recording/recording_controller.dart';
 import 'recording/speech_service.dart';
+import 'recording/speech_to_text_service.dart';
 import 'ui/entry_list_screen.dart';
 import 'ui/id_picker_screen.dart';
 
@@ -20,14 +21,12 @@ Future<void> main() async {
     JournalApp(
       repository: repository,
       settings: settings,
-      // TODO: replace with the speech_to_text implementation.
-      speech: const UnavailableSpeechService(),
+      speech: SpeechToTextService(),
     ),
   );
 }
 
-/// Placeholder until a real recognizer is wired in: recording reports
-/// "unavailable".
+/// A recognizer that is never available, e.g. for tests.
 class UnavailableSpeechService implements SpeechService {
   const UnavailableSpeechService();
 
