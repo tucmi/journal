@@ -11,7 +11,7 @@ import 'recording/recording_controller.dart';
 import 'recording/speech_service.dart';
 import 'recording/speech_to_text_service.dart';
 import 'ui/entry_list_screen.dart';
-import 'ui/id_picker_screen.dart';
+import 'ui/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -114,7 +114,10 @@ class _JournalAppState extends State<JournalApp> {
                 recorder: _recorder,
                 transfer: widget.transfer,
               )
-            : IdPickerScreen(settings: widget.settings),
+            : OnboardingScreen(
+                settings: widget.settings,
+                speech: widget.speech,
+              ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../recording/recording_controller.dart';
 import 'entry_edit_screen.dart';
 import 'format.dart';
 import 'id_picker_screen.dart';
+import 'logo.dart';
 
 /// The main screen: entries grouped by day, search, date range, record button.
 class EntryListScreen extends StatefulWidget {
@@ -156,7 +157,13 @@ class _EntryListScreenState extends State<EntryListScreen> {
                 ),
                 onChanged: (v) => setState(() => _text = v),
               )
-            : const Text('Journal'),
+            : const Row(
+                children: [
+                  Logo(size: 28),
+                  SizedBox(width: 12),
+                  Text('Journal'),
+                ],
+              ),
         actions: [
           IconButton(
             tooltip: 'Suchen',

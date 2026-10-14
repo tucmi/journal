@@ -84,19 +84,103 @@ void main() {
   Entry entry(String text, DateTime local) =>
       Entry.create(sensorKitId: 'sa-sa-sk-1', text: text, created: local);
 
-  testWidgets('first launch shows the id picker, then the list', (
-    tester,
-  ) async {
-    await pump(tester);
-    expect(find.text('SensorKit wählen'), findsOneWidget);
-    expect(find.text('sa-sa-sk-1'), findsOneWidget);
+  testWidgets('first launch walks through the onboarding', (tester) async {
+    final speech = ListeningSpeech();
+    await tester.pumpWidget(
+      JournalApp(
+        repository: repo,
+        settings: settings,
+        speech: speech,
+        transfer: transfer,
+      ),
+    );
+    expect(find.text('Willkommen im Journal'), findsOneWidget);
+    expect(find.bySemanticsLabel('Simplications Logo'), findsOneWidget);
+
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welches SensorKit?'), findsOneWidget);
+    // Cannot continue before choosing one.
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Weiter'))
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.text('sa-sa-sk-3'));
+    await tester.pump();
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mikrofon'), findsOneWidget);
+    await tester.tap(find.text('Zugriff erlauben'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Mikrofon und Spracherkennung sind bereit.'),
+      findsOneWidget,
+    );
 
     await tester.runAsync(() async {
-      await settings.setSensorKitId('sa-sa-sk-3');
+      await tester.tap(find.text('Fertig'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
     });
     await tester.pumpAndSettle();
-    expect(find.text('Journal'), findsOneWidget);
+    expect(settings.sensorKitId, 'sa-sa-sk-3');
     expect(find.text('Noch keine Einträge.'), findsOneWidget);
+    expect(find.bySemanticsLabel('Simplications Logo'), findsOneWidget);
+  });
+
+  testWidgets('a denied microphone is explained and does not block finishing', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      JournalApp(
+        repository: repo,
+        settings: settings,
+        speech: const UnavailableSpeechService(),
+        transfer: transfer,
+      ),
+    );
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('sa-sa-sk-1'));
+    await tester.pump();
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Zugriff erlauben'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('nicht erteilt'), findsOneWidget);
+    expect(find.text('Erneut versuchen'), findsOneWidget);
+    expect(find.text('Fertig'), findsOneWidget);
+  });
+
+  testWidgets('back returns to the previous step keeping the choice', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      JournalApp(
+        repository: repo,
+        settings: settings,
+        speech: const UnavailableSpeechService(),
+        transfer: transfer,
+      ),
+    );
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('sa-sa-sk-5'));
+    await tester.pump();
+    await tester.tap(find.text('Zurück'));
+    await tester.pumpAndSettle();
+    expect(find.text('Willkommen im Journal'), findsOneWidget);
+    await tester.tap(find.text('Weiter'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'sa-sa-sk-5'))
+          .selected,
+      isTrue,
+    );
   });
 
   testWidgets('entries are grouped by day and searchable', (tester) async {
@@ -337,6 +421,6 @@ void main() {
     await tester.pump();
 
     expect(speech.started, isFalse);
-    expect(find.text('SensorKit wählen'), findsOneWidget);
+    expect(find.text('Willkommen im Journal'), findsOneWidget);
   });
 }
