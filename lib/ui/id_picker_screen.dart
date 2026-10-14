@@ -29,7 +29,7 @@ class IdPickerScreen extends StatelessWidget {
             ),
             for (final id in sensorKitIds)
               ListTile(
-                title: Text(id),
+                title: Text(sensorKitDisplayName(id)),
                 trailing: id == settings.sensorKitId
                     ? const Icon(Icons.check)
                     : null,

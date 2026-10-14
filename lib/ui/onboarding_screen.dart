@@ -122,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             for (final id in sensorKitIds)
               ChoiceChip(
-                label: Text(id),
+                label: Text(sensorKitDisplayName(id)),
                 selected: id == _sensorKitId,
                 onSelected: (_) => setState(() => _sensorKitId = id),
               ),

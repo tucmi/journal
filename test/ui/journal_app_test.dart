@@ -107,7 +107,7 @@ void main() {
           .onPressed,
       isNull,
     );
-    await tester.tap(find.text('sa-sa-sk-3'));
+    await tester.tap(find.text('tucmi-sensorkit-3'));
     await tester.pump();
     await tester.tap(find.text('Weiter'));
     await tester.pumpAndSettle();
@@ -143,7 +143,7 @@ void main() {
     );
     await tester.tap(find.text('Weiter'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('sa-sa-sk-1'));
+    await tester.tap(find.text('tucmi-sensorkit-1'));
     await tester.pump();
     await tester.tap(find.text('Weiter'));
     await tester.pumpAndSettle();
@@ -168,7 +168,7 @@ void main() {
     );
     await tester.tap(find.text('Weiter'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('sa-sa-sk-5'));
+    await tester.tap(find.text('tucmi-sensorkit-5'));
     await tester.pump();
     await tester.tap(find.text('Zurück'));
     await tester.pumpAndSettle();
@@ -177,7 +177,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester
-          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'sa-sa-sk-5'))
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'tucmi-sensorkit-5'))
           .selected,
       isTrue,
     );

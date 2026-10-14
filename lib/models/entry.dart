@@ -101,3 +101,8 @@ String generateId(String sensorKitId, {Random? random}) {
 final List<String> sensorKitIds = List.unmodifiable([
   for (var i = 1; i <= 12; i++) 'sa-sa-sk-$i',
 ]);
+
+/// The name shown to users for [sensorKitId]: `sa-sa-sk-1` -> `tucmi-sensorkit-1`.
+/// The internal id (used in exports) is unchanged.
+String sensorKitDisplayName(String sensorKitId) =>
+    'tucmi-sensorkit-${sensorKitId.split('-').last}';
