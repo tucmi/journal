@@ -133,6 +133,34 @@ class _EntryListScreenState extends State<EntryListScreen> {
     }
   }
 
+  void _showAbout() {
+    showAboutDialog(
+      context: context,
+      applicationName: 'Simplications Journal',
+      applicationVersion: '0.1.0',
+      applicationIcon: const Logo(size: 48),
+      applicationLegalese: '© Simplications-Projekt · MIT-Lizenz',
+      children: const [
+        SizedBox(height: 16),
+        Text(
+          'Das Simplications Journal ergänzt die Daten deines SensorKits: '
+          'Du sprichst Einträge ein, die als Annotationen exportiert werden. '
+          'Alle Einträge werden lokal auf dem Gerät gespeichert, ein Konto '
+          'ist nicht nötig.',
+        ),
+        SizedBox(height: 12),
+        Text(
+          'Entwickelt vom Simplications-Projekt. Partner: Technische '
+          'Universität Chemnitz, Hochschule Anhalt, Verbraucherzentrale '
+          'Sachsen e.V. Koordination: Plattform Privatheit. Gefördert vom '
+          'BMFTR.',
+        ),
+        SizedBox(height: 12),
+        SelectableText('https://simplications.tucmi.de'),
+      ],
+    );
+  }
+
   void _openIdPicker() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -161,7 +189,13 @@ class _EntryListScreenState extends State<EntryListScreen> {
                 children: [
                   Logo(size: 28),
                   SizedBox(width: 12),
-                  Text('Journal'),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Simplications Journal'),
+                    ),
+                  ),
                 ],
               ),
         actions: [
@@ -188,6 +222,7 @@ class _EntryListScreenState extends State<EntryListScreen> {
                 value: _openIdPicker,
                 child: const Text('SensorKit ändern'),
               ),
+              PopupMenuItem(value: _showAbout, child: const Text('Über')),
             ],
           ),
         ],

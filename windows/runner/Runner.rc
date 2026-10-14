@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "de.tucmi" "\0"
-            VALUE "FileDescription", "journal" "\0"
+            VALUE "FileDescription", "Simplications Journal" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "journal" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 de.tucmi. All rights reserved." "\0"
             VALUE "OriginalFilename", "journal.exe" "\0"
-            VALUE "ProductName", "journal" "\0"
+            VALUE "ProductName", "Simplications Journal" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

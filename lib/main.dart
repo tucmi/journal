@@ -103,7 +103,7 @@ class _JournalAppState extends State<JournalApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'Journal',
+      title: 'Simplications Journal',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
       home: ListenableBuilder(
         listenable: widget.settings,

@@ -94,7 +94,7 @@ void main() {
         transfer: transfer,
       ),
     );
-    expect(find.text('Willkommen im Journal'), findsOneWidget);
+    expect(find.text('Willkommen im Simplications Journal'), findsOneWidget);
     expect(find.bySemanticsLabel('Simplications Logo'), findsOneWidget);
 
     await tester.tap(find.text('Weiter'));
@@ -172,7 +172,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Zurück'));
     await tester.pumpAndSettle();
-    expect(find.text('Willkommen im Journal'), findsOneWidget);
+    expect(find.text('Willkommen im Simplications Journal'), findsOneWidget);
     await tester.tap(find.text('Weiter'));
     await tester.pumpAndSettle();
     expect(
@@ -421,6 +421,6 @@ void main() {
     await tester.pump();
 
     expect(speech.started, isFalse);
-    expect(find.text('Willkommen im Journal'), findsOneWidget);
+    expect(find.text('Willkommen im Simplications Journal'), findsOneWidget);
   });
 }

@@ -83,7 +83,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         const Center(child: Logo(size: 120)),
         const SizedBox(height: 24),
-        _heading(context, 'Willkommen im Journal'),
+        _heading(context, 'Willkommen im Simplications Journal'),
         const SizedBox(height: 16),
         const Text(
           'Sprich kurz ein, was gerade passiert. Die App wandelt es in Text '
