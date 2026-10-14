@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'data/entry_repository.dart';
+import 'data/file_transfer.dart';
 import 'data/settings.dart';
 import 'recording/recording_controller.dart';
 import 'recording/speech_service.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
       repository: repository,
       settings: settings,
       speech: SpeechToTextService(),
+      transfer: const PlatformFileTransfer(),
     ),
   );
 }
@@ -50,11 +52,13 @@ class JournalApp extends StatefulWidget {
     required this.repository,
     required this.settings,
     required this.speech,
+    required this.transfer,
   });
 
   final EntryRepository repository;
   final Settings settings;
   final SpeechService speech;
+  final FileTransfer transfer;
 
   @override
   State<JournalApp> createState() => _JournalAppState();
@@ -85,6 +89,7 @@ class _JournalAppState extends State<JournalApp> {
                 repository: widget.repository,
                 settings: widget.settings,
                 recorder: _recorder,
+                transfer: widget.transfer,
               )
             : IdPickerScreen(settings: widget.settings),
       ),

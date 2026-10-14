@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../data/entry_query.dart';
 import '../data/entry_repository.dart';
+import '../data/export_codec.dart';
+import '../data/file_transfer.dart';
 import '../data/settings.dart';
 import '../models/entry.dart';
 import '../recording/recording_controller.dart';
@@ -16,11 +18,13 @@ class EntryListScreen extends StatefulWidget {
     required this.repository,
     required this.settings,
     required this.recorder,
+    required this.transfer,
   });
 
   final EntryRepository repository;
   final Settings settings;
   final RecordingController recorder;
+  final FileTransfer transfer;
 
   @override
   State<EntryListScreen> createState() => _EntryListScreenState();
@@ -83,6 +87,51 @@ class _EntryListScreenState extends State<EntryListScreen> {
     );
   }
 
+  void _say(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _export() async {
+    final entries = widget.repository.entries;
+    if (entries.isEmpty) return _say('Keine Einträge zum Exportieren.');
+    try {
+      await widget.transfer.share(
+        fileName: exportFileName(
+          widget.settings.sensorKitId ?? 'journal',
+          DateTime.now(),
+        ),
+        contents: encodeExport(entries),
+      );
+    } on Object {
+      if (mounted) _say('Export fehlgeschlagen.');
+    }
+  }
+
+  Future<void> _import() async {
+    final String? source;
+    try {
+      source = await widget.transfer.pickJson();
+    } on Object {
+      if (mounted) _say('Datei konnte nicht gelesen werden.');
+      return;
+    }
+    if (source == null) return;
+    try {
+      final added = await widget.repository.addAll(decodeExport(source));
+      if (mounted) {
+        _say(
+          added == 0
+              ? 'Nichts Neues importiert.'
+              : '$added Einträge importiert.',
+        );
+      }
+    } on FormatException {
+      if (mounted) _say('Keine gültige Journal-Datei.');
+    }
+  }
+
   void _openIdPicker() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -122,10 +171,17 @@ class _EntryListScreenState extends State<EntryListScreen> {
             icon: const Icon(Icons.date_range),
             onPressed: _pickRange,
           ),
-          IconButton(
-            tooltip: 'SensorKit ändern',
-            icon: const Icon(Icons.sensors),
-            onPressed: _openIdPicker,
+          PopupMenuButton<VoidCallback>(
+            tooltip: 'Menü',
+            onSelected: (action) => action(),
+            itemBuilder: (context) => [
+              PopupMenuItem(value: _export, child: const Text('Exportieren')),
+              PopupMenuItem(value: _import, child: const Text('Importieren')),
+              PopupMenuItem(
+                value: _openIdPicker,
+                child: const Text('SensorKit ändern'),
+              ),
+            ],
           ),
         ],
       ),

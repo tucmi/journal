@@ -3,19 +3,41 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:journal/data/entry_repository.dart';
+import 'package:journal/data/export_codec.dart';
+import 'package:journal/data/file_transfer.dart';
 import 'package:journal/data/settings.dart';
 import 'package:journal/main.dart';
 import 'package:journal/models/entry.dart';
+
+class FakeTransfer implements FileTransfer {
+  String? sharedName;
+  String? sharedContents;
+  String? toPick;
+
+  @override
+  Future<void> share({
+    required String fileName,
+    required String contents,
+  }) async {
+    sharedName = fileName;
+    sharedContents = contents;
+  }
+
+  @override
+  Future<String?> pickJson() async => toPick;
+}
 
 void main() {
   late Directory dir;
   late EntryRepository repo;
   late Settings settings;
+  late FakeTransfer transfer;
 
   setUp(() {
     dir = Directory.systemTemp.createTempSync('journal_ui_');
     repo = EntryRepository(File('${dir.path}/entries.json'));
     settings = Settings(File('${dir.path}/settings.json'));
+    transfer = FakeTransfer();
   });
 
   tearDown(() => dir.deleteSync(recursive: true));
@@ -25,6 +47,7 @@ void main() {
       repository: repo,
       settings: settings,
       speech: const UnavailableSpeechService(),
+      transfer: transfer,
     ),
   );
 
@@ -142,5 +165,78 @@ void main() {
       find.text('Spracherkennung nicht verfügbar oder Mikrofon nicht erlaubt.'),
       findsOneWidget,
     );
+  });
+
+  Future<void> choose(WidgetTester tester, String item) async {
+    await tester.tap(find.byTooltip('Menü'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(item));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('export shares all entries as annotation JSON', (tester) async {
+    await tester.runAsync(() async {
+      await settings.setSensorKitId('sa-sa-sk-2');
+      await repo.addAll([entry('Eins', DateTime(2026, 10, 14, 9))]);
+    });
+    await pump(tester);
+
+    await choose(tester, 'Exportieren');
+
+    expect(transfer.sharedName, startsWith('journal_sa-sa-sk-2_'));
+    expect(transfer.sharedName, endsWith('.json'));
+    expect(decodeExport(transfer.sharedContents!).single.text, 'Eins');
+  });
+
+  testWidgets('import adds new entries and skips known ones', (tester) async {
+    late Entry known;
+    await tester.runAsync(() async {
+      await settings.setSensorKitId('sa-sa-sk-1');
+      known = entry('Schon da', DateTime(2026, 10, 14, 9));
+      await repo.add(known);
+    });
+    final fresh = entry('Neu', DateTime(2026, 10, 13, 9));
+    transfer.toPick = encodeExport([known, fresh]);
+    await pump(tester);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.byTooltip('Menü'));
+    });
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Importieren'));
+    await tester.pump();
+    for (var i = 0; i < 50 && repo.entries.length < 2; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 40)),
+      );
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+
+    expect(repo.entries.length, 2);
+    expect(find.text('1 Einträge importiert.'), findsOneWidget);
+    expect(find.text('Neu'), findsOneWidget);
+  });
+
+  testWidgets('import rejects a file that is not a journal export', (
+    tester,
+  ) async {
+    await tester.runAsync(() => settings.setSensorKitId('sa-sa-sk-1'));
+    transfer.toPick = '{"not": "a list"}';
+    await pump(tester);
+
+    await choose(tester, 'Importieren');
+
+    expect(find.text('Keine gültige Journal-Datei.'), findsOneWidget);
+    expect(repo.entries, isEmpty);
+  });
+
+  testWidgets('cancelling the file picker does nothing', (tester) async {
+    await tester.runAsync(() => settings.setSensorKitId('sa-sa-sk-1'));
+    await pump(tester);
+
+    await choose(tester, 'Importieren');
+
+    expect(find.byType(SnackBar), findsNothing);
   });
 }
