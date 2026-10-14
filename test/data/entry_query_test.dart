@@ -4,11 +4,11 @@ import 'package:journal/models/entry.dart';
 
 // Built from local times so the tests do not depend on the machine's zone.
 Entry at(String id, DateTime local, String text) => Entry(
-      id: id,
-      created: local.toUtc(),
-      sensorKitId: 'sa-sa-sk-1',
-      text: text,
-    );
+  id: id,
+  created: local.toUtc(),
+  sensorKitId: 'sa-sa-sk-1',
+  text: text,
+);
 
 void main() {
   final kaffee = at('1', DateTime(2025, 3, 10, 8, 15), 'Kaffee gekocht');

@@ -6,11 +6,11 @@ import 'package:journal/data/entry_repository.dart';
 import 'package:journal/models/entry.dart';
 
 Entry entry(String id, int hour, [String text = 't']) => Entry(
-      id: id,
-      created: DateTime.utc(2025, 1, 1, hour),
-      sensorKitId: 'sa-sa-sk-1',
-      text: text,
-    );
+  id: id,
+  created: DateTime.utc(2025, 1, 1, hour),
+  sensorKitId: 'sa-sa-sk-1',
+  text: text,
+);
 
 void main() {
   late Directory dir;
@@ -55,15 +55,17 @@ void main() {
     expect(() => repo.add(entry('a', 11)), throwsArgumentError);
   });
 
-  test('update replaces text and moves the entry when created changes',
-      () async {
-    await repo.add(entry('a', 10));
-    await repo.add(entry('b', 12));
-    await repo.update(entry('a', 14, 'neu'));
-    expect(repo.entries.map((e) => e.id), ['a', 'b']);
-    expect(repo.byId('a')!.text, 'neu');
-    expect((await reopen()).byId('a')!.text, 'neu');
-  });
+  test(
+    'update replaces text and moves the entry when created changes',
+    () async {
+      await repo.add(entry('a', 10));
+      await repo.add(entry('b', 12));
+      await repo.update(entry('a', 14, 'neu'));
+      expect(repo.entries.map((e) => e.id), ['a', 'b']);
+      expect(repo.byId('a')!.text, 'neu');
+      expect((await reopen()).byId('a')!.text, 'neu');
+    },
+  );
 
   test('update rejects an unknown id', () async {
     expect(() => repo.update(entry('x', 1)), throwsArgumentError);

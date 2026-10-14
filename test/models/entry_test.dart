@@ -25,7 +25,12 @@ void main() {
 
     test('exports unused Grafana fields empty', () {
       final json = entry.toJson();
-      for (final key in ['alertName', 'dashboardUID', 'newState', 'prevState']) {
+      for (final key in [
+        'alertName',
+        'dashboardUID',
+        'newState',
+        'prevState',
+      ]) {
         expect(json[key], '');
       }
       for (final key in ['alertId', 'dashboardId', 'panelId', 'userId']) {
@@ -60,24 +65,37 @@ void main() {
     });
 
     test('falls back to email when login is missing', () {
-      final e = Entry.fromJson(
-          {'id': 'a', 'created': 1, 'email': 'sa-sa-sk-2', 'text': ''});
+      final e = Entry.fromJson({
+        'id': 'a',
+        'created': 1,
+        'email': 'sa-sa-sk-2',
+        'text': '',
+      });
       expect(e.sensorKitId, 'sa-sa-sk-2');
     });
 
     test('defaults missing text to empty', () {
-      final e =
-          Entry.fromJson({'id': 'a', 'created': 1, 'login': 'sa-sa-sk-2'});
+      final e = Entry.fromJson({
+        'id': 'a',
+        'created': 1,
+        'login': 'sa-sa-sk-2',
+      });
       expect(e.text, '');
     });
 
     test('rejects entries without id, created or login', () {
-      expect(() => Entry.fromJson({'created': 1, 'login': 'x'}),
-          throwsFormatException);
-      expect(() => Entry.fromJson({'id': 'a', 'login': 'x'}),
-          throwsFormatException);
-      expect(() => Entry.fromJson({'id': 'a', 'created': 1}),
-          throwsFormatException);
+      expect(
+        () => Entry.fromJson({'created': 1, 'login': 'x'}),
+        throwsFormatException,
+      );
+      expect(
+        () => Entry.fromJson({'id': 'a', 'login': 'x'}),
+        throwsFormatException,
+      );
+      expect(
+        () => Entry.fromJson({'id': 'a', 'created': 1}),
+        throwsFormatException,
+      );
     });
   });
 

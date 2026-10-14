@@ -95,13 +95,15 @@ void main() {
     expect(controller.partialText, 'Es klin');
   });
 
-  test('stop falls back to the last partial result after the timeout',
-      () async {
-    await controller.start();
-    speech.onResult('nur partiell', false);
-    await controller.stop();
-    expect(repo.entries.single.text, 'nur partiell');
-  });
+  test(
+    'stop falls back to the last partial result after the timeout',
+    () async {
+      await controller.start();
+      speech.onResult('nur partiell', false);
+      await controller.stop();
+      expect(repo.entries.single.text, 'nur partiell');
+    },
+  );
 
   test('a final result while listening saves without a stop', () async {
     await controller.start();
@@ -130,7 +132,10 @@ void main() {
   test('refuses to record before a SensorKit id is chosen', () async {
     final fresh = Settings(File('${dir.path}/none.json'));
     final c = RecordingController(
-        speech: speech, repository: repo, settings: fresh);
+      speech: speech,
+      repository: repo,
+      settings: fresh,
+    );
     await c.start();
     expect(c.problem, RecordingProblem.notConfigured);
     expect(c.state, RecordingState.idle);

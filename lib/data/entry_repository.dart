@@ -55,9 +55,7 @@ class EntryRepository extends ChangeNotifier {
     if (byId(entry.id) == null) {
       throw ArgumentError.value(entry.id, 'entry', 'no such entry');
     }
-    await _commit([
-      for (final e in _entries) e.id == entry.id ? entry : e,
-    ]);
+    await _commit([for (final e in _entries) e.id == entry.id ? entry : e]);
   }
 
   /// Returns false if there was no such entry.
@@ -94,6 +92,6 @@ class EntryRepository extends ChangeNotifier {
   }
 
   static List<Entry> _sorted(Iterable<Entry> entries) => List.unmodifiable(
-        entries.toList()..sort((a, b) => b.created.compareTo(a.created)),
-      );
+    entries.toList()..sort((a, b) => b.created.compareTo(a.created)),
+  );
 }

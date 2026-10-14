@@ -47,33 +47,33 @@ class Entry {
 
   /// The full Grafana annotation; fields we do not use are exported empty.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'alertId': 0,
-        'alertName': '',
-        'dashboardId': 0,
-        'dashboardUID': '',
-        'panelId': 0,
-        'userId': 0,
-        'newState': '',
-        'prevState': '',
-        'created': created.millisecondsSinceEpoch,
-        'updated': 0,
-        'time': 0,
-        'timeEnd': 0,
-        'text': text,
-        'tags': <String>[],
-        'login': sensorKitId,
-        'email': sensorKitId,
-        'avatarUrl': '',
-        'data': <String, dynamic>{},
-      };
+    'id': id,
+    'alertId': 0,
+    'alertName': '',
+    'dashboardId': 0,
+    'dashboardUID': '',
+    'panelId': 0,
+    'userId': 0,
+    'newState': '',
+    'prevState': '',
+    'created': created.millisecondsSinceEpoch,
+    'updated': 0,
+    'time': 0,
+    'timeEnd': 0,
+    'text': text,
+    'tags': <String>[],
+    'login': sensorKitId,
+    'email': sensorKitId,
+    'avatarUrl': '',
+    'data': <String, dynamic>{},
+  };
 
   Entry copyWith({DateTime? created, String? text}) => Entry(
-        id: id,
-        created: created?.toUtc() ?? this.created,
-        sensorKitId: sensorKitId,
-        text: text ?? this.text,
-      );
+    id: id,
+    created: created?.toUtc() ?? this.created,
+    sensorKitId: sensorKitId,
+    text: text ?? this.text,
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -98,5 +98,6 @@ String generateId(String sensorKitId, {Random? random}) {
 }
 
 /// The twelve SensorKit ids, `sa-sa-sk-1` to `sa-sa-sk-12`.
-final List<String> sensorKitIds =
-    List.unmodifiable([for (var i = 1; i <= 12; i++) 'sa-sa-sk-$i']);
+final List<String> sensorKitIds = List.unmodifiable([
+  for (var i = 1; i <= 12; i++) 'sa-sa-sk-$i',
+]);

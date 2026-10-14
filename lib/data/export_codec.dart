@@ -12,9 +12,9 @@ String exportFileName(String sensorKitId, DateTime now) {
 }
 
 /// Encodes [entries] as a JSON array of Grafana annotations.
-String encodeExport(Iterable<Entry> entries) => const JsonEncoder.withIndent(
-      '  ',
-    ).convert([for (final e in entries) e.toJson()]);
+String encodeExport(Iterable<Entry> entries) =>
+    const JsonEncoder.withIndent('  ')
+        .convert([for (final e in entries) e.toJson()]);
 
 /// Parses an export (or a SensorKit annotations file). Throws a
 /// [FormatException] if [source] is not a JSON array of valid entries; nothing

@@ -50,7 +50,7 @@ void main() {
           'login': 'sa-sa-sk-1',
           'email': 'sa-sa-sk-1',
           'data': {},
-        }
+        },
       ]);
       final entries = decodeExport(source);
       expect(entries.single.id, '43');
@@ -78,7 +78,10 @@ void main() {
     });
 
     test('rejects the whole file if one entry is invalid', () {
-      final source = jsonEncode([a.toJson(), {'text': 'no id'}]);
+      final source = jsonEncode([
+        a.toJson(),
+        {'text': 'no id'},
+      ]);
       expect(() => decodeExport(source), throwsFormatException);
     });
   });

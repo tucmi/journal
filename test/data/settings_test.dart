@@ -21,17 +21,19 @@ void main() {
     expect(s.sensorKitId, isNull);
   });
 
-  test('setSensorKitId persists across instances and creates folders',
-      () async {
-    final s = Settings(file);
-    await s.setSensorKitId('sa-sa-sk-12');
-    expect(s.sensorKitId, 'sa-sa-sk-12');
+  test(
+    'setSensorKitId persists across instances and creates folders',
+    () async {
+      final s = Settings(file);
+      await s.setSensorKitId('sa-sa-sk-12');
+      expect(s.sensorKitId, 'sa-sa-sk-12');
 
-    final again = Settings(file);
-    await again.load();
-    expect(again.sensorKitId, 'sa-sa-sk-12');
-    expect(again.isConfigured, isTrue);
-  });
+      final again = Settings(file);
+      await again.load();
+      expect(again.sensorKitId, 'sa-sa-sk-12');
+      expect(again.isConfigured, isTrue);
+    },
+  );
 
   test('the id can be changed later', () async {
     final s = Settings(file);

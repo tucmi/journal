@@ -26,8 +26,7 @@ class EntryQuery {
     return true;
   }
 
-  List<Entry> apply(Iterable<Entry> entries) =>
-      entries.where(matches).toList();
+  List<Entry> apply(Iterable<Entry> entries) => entries.where(matches).toList();
 }
 
 /// Midnight of the local day containing [t].
