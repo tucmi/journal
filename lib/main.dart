@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'data/entry_repository.dart';
 import 'data/file_transfer.dart';
 import 'data/settings.dart';
+import 'recording/record_requests.dart';
 import 'recording/recording_controller.dart';
 import 'recording/speech_service.dart';
 import 'recording/speech_to_text_service.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
       settings: settings,
       speech: SpeechToTextService(),
       transfer: const PlatformFileTransfer(),
+      requests: ChannelRecordRequests(),
     ),
   );
 }
@@ -53,12 +55,14 @@ class JournalApp extends StatefulWidget {
     required this.settings,
     required this.speech,
     required this.transfer,
+    this.requests = const NoRecordRequests(),
   });
 
   final EntryRepository repository;
   final Settings settings;
   final SpeechService speech;
   final FileTransfer transfer;
+  final RecordRequests requests;
 
   @override
   State<JournalApp> createState() => _JournalAppState();
@@ -71,6 +75,24 @@ class _JournalAppState extends State<JournalApp> {
     settings: widget.settings,
   );
 
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.requests.listen(_onRecordRequest);
+    widget.requests.takeInitial().then((requested) {
+      if (requested) _onRecordRequest();
+    });
+  }
+
+  /// Back to the list, then start recording. Before the SensorKit id is
+  /// chosen there is nothing to record into, so the picker stays up.
+  void _onRecordRequest() {
+    _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    if (widget.settings.isConfigured) _recorder.start();
+  }
+
   @override
   void dispose() {
     _recorder.dispose();
@@ -80,6 +102,7 @@ class _JournalAppState extends State<JournalApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Journal',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
       home: ListenableBuilder(

@@ -8,6 +8,8 @@ import 'package:journal/data/file_transfer.dart';
 import 'package:journal/data/settings.dart';
 import 'package:journal/main.dart';
 import 'package:journal/models/entry.dart';
+import 'package:journal/recording/record_requests.dart';
+import 'package:journal/recording/speech_service.dart';
 
 class FakeTransfer implements FileTransfer {
   String? sharedName;
@@ -25,6 +27,34 @@ class FakeTransfer implements FileTransfer {
 
   @override
   Future<String?> pickJson() async => toPick;
+}
+
+class FakeRequests implements RecordRequests {
+  bool initial = false;
+  void Function()? onRequest;
+
+  @override
+  Future<bool> takeInitial() async => initial;
+
+  @override
+  void listen(void Function() onRequest) => this.onRequest = onRequest;
+}
+
+class ListeningSpeech implements SpeechService {
+  bool started = false;
+
+  @override
+  Future<bool> initialize() async => true;
+
+  @override
+  Future<void> start({
+    required String localeId,
+    required void Function(String text, bool isFinal) onResult,
+    required void Function(String message) onError,
+  }) async => started = true;
+
+  @override
+  Future<void> stop() async => started = false;
 }
 
 void main() {
@@ -238,5 +268,75 @@ void main() {
     await choose(tester, 'Importieren');
 
     expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('a record request at launch starts listening', (tester) async {
+    await tester.runAsync(() => settings.setSensorKitId('sa-sa-sk-1'));
+    final speech = ListeningSpeech();
+    await tester.pumpWidget(
+      JournalApp(
+        repository: repo,
+        settings: settings,
+        speech: speech,
+        transfer: transfer,
+        requests: FakeRequests()..initial = true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(speech.started, isTrue);
+    expect(find.text('Ich höre zu …'), findsOneWidget);
+  });
+
+  testWidgets(
+    'a record request while editing returns to the list and records',
+    (tester) async {
+      late Entry e;
+      await tester.runAsync(() async {
+        await settings.setSensorKitId('sa-sa-sk-1');
+        e = entry('Offen', DateTime(2026, 10, 14, 9));
+        await repo.add(e);
+      });
+      final speech = ListeningSpeech();
+      final requests = FakeRequests();
+      await tester.pumpWidget(
+        JournalApp(
+          repository: repo,
+          settings: settings,
+          speech: speech,
+          transfer: transfer,
+          requests: requests,
+        ),
+      );
+      await tester.tap(find.text('Offen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Eintrag'), findsOneWidget);
+
+      requests.onRequest!();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Eintrag'), findsNothing);
+      expect(speech.started, isTrue);
+    },
+  );
+
+  testWidgets('a record request before the SensorKit id is chosen is ignored', (
+    tester,
+  ) async {
+    final speech = ListeningSpeech();
+    await tester.pumpWidget(
+      JournalApp(
+        repository: repo,
+        settings: settings,
+        speech: speech,
+        transfer: transfer,
+        requests: FakeRequests()..initial = true,
+      ),
+    );
+    await tester.pump();
+
+    expect(speech.started, isFalse);
+    expect(find.text('SensorKit wählen'), findsOneWidget);
   });
 }
