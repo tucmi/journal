@@ -105,6 +105,40 @@ void main() {
     },
   );
 
+  test('text before a recognizer restart after a pause is kept', () async {
+    await controller.start();
+    speech.onResult('Heute Morgen', false);
+    speech.onResult('Heute Morgen kam der Postbote', false);
+    // After a pause the recognizer starts over with only the new words.
+    speech.onResult('er brachte', false);
+    speech.onResult('er brachte ein Paket', false);
+    expect(
+      controller.partialText,
+      'Heute Morgen kam der Postbote er brachte ein Paket',
+    );
+    await controller.stop();
+    expect(
+      repo.entries.single.text,
+      'Heute Morgen kam der Postbote er brachte ein Paket',
+    );
+  });
+
+  test('a final result repeating the whole dictation is not doubled', () async {
+    await controller.start();
+    speech.onResult('Erster Teil', false);
+    speech.onResult('zweiter Teil', false);
+    speech.onResult('Erster Teil zweiter Teil', true);
+    await controller.settled;
+    expect(repo.entries.single.text, 'Erster Teil zweiter Teil');
+  });
+
+  test('revising words inside a segment does not start a new one', () async {
+    await controller.start();
+    speech.onResult('ich geh heute', false);
+    speech.onResult('Ich geht heute einkaufen', false);
+    expect(controller.partialText, 'Ich geht heute einkaufen');
+  });
+
   test('a final result while listening saves without a stop', () async {
     await controller.start();
     speech.onResult('Pause erkannt', true);

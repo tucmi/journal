@@ -120,4 +120,18 @@ void main() {
     await repo.add(entry('a', 10));
     expect((await reopen()).entries, hasLength(1));
   });
+
+  test(
+    'the list updates before the write finishes and bursts persist',
+    () async {
+      final first = repo.add(entry('a', 10));
+      final second = repo.add(entry('b', 11));
+      final third = repo.add(entry('c', 12));
+      // Visible immediately, without awaiting the disk.
+      expect(repo.entries.map((e) => e.id), ['c', 'b', 'a']);
+      await Future.wait([first, second, third]);
+      expect((await reopen()).entries.map((e) => e.id), ['c', 'b', 'a']);
+      expect(File('${file.path}.tmp').existsSync(), isFalse);
+    },
+  );
 }

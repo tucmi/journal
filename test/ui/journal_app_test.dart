@@ -177,7 +177,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester
-          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'tucmi-sensorkit-5'))
+          .widget<ChoiceChip>(
+            find.widgetWithText(ChoiceChip, 'tucmi-sensorkit-5'),
+          )
           .selected,
       isTrue,
     );
@@ -252,9 +254,10 @@ void main() {
     await tester.tap(find.text('Löschen'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
-    // The delete started in the fake-async zone, so real file IO and
-    // microtask flushing (pump) have to take turns.
-    for (var i = 0; i < 50 && repo.entries.isNotEmpty; i++) {
+    // The delete's file write started in the fake-async zone, so real file IO
+    // and microtask flushing (pump) have to take turns. The list updates
+    // immediately, but the screen only closes once the write is done.
+    for (var i = 0; i < 10; i++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 40)),
       );

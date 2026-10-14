@@ -247,12 +247,19 @@ class _EntryListScreenState extends State<EntryListScreen> {
             builder: (context, _) => widget.recorder.isListening
                 ? Container(
                     width: double.infinity,
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+                    ),
                     color: Theme.of(context).colorScheme.errorContainer,
                     padding: const EdgeInsets.all(16),
-                    child: Text(
-                      widget.recorder.partialText.isEmpty
-                          ? 'Ich höre zu …'
-                          : widget.recorder.partialText,
+                    // Long dictations scroll, newest words at the bottom.
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      child: Text(
+                        widget.recorder.partialText.isEmpty
+                            ? 'Ich höre zu …'
+                            : widget.recorder.partialText,
+                      ),
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -294,25 +301,35 @@ class _EntryListScreenState extends State<EntryListScreen> {
         ),
       );
     }
-    return ListView(
-      children: [
-        for (final MapEntry(key: day, value: entries) in groups.entries) ...[
-          Padding(
+    // Flatten day headings and entries into one list so ListView.builder only
+    // builds the rows on screen.
+    final rows = <Object>[
+      for (final MapEntry(key: day, value: entries) in groups.entries) ...[
+        day,
+        ...entries,
+      ],
+    ];
+    return ListView.builder(
+      itemCount: rows.length + 1,
+      itemBuilder: (context, i) {
+        if (i == rows.length) return const SizedBox(height: 96);
+        final row = rows[i];
+        if (row is DateTime) {
+          return Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Text(
-              formatDayHeading(day),
+              formatDayHeading(row),
               style: Theme.of(context).textTheme.titleSmall,
             ),
-          ),
-          for (final e in entries)
-            ListTile(
-              leading: Text(formatTime(e.created)),
-              title: Text(e.text, maxLines: 3, overflow: TextOverflow.ellipsis),
-              onTap: () => _openEdit(e),
-            ),
-        ],
-        const SizedBox(height: 96),
-      ],
+          );
+        }
+        final e = row as Entry;
+        return ListTile(
+          leading: Text(formatTime(e.created)),
+          title: Text(e.text, maxLines: 3, overflow: TextOverflow.ellipsis),
+          onTap: () => _openEdit(e),
+        );
+      },
     );
   }
 }

@@ -10,16 +10,22 @@ class SpeechToTextService implements SpeechService {
 
   final SpeechToText _speech;
   void Function(String message)? _onError;
+  bool _initialized = false;
 
+  /// Initialising talks to the OS recognizer service, which is slow on weak
+  /// phones, so a success is remembered. A failure is retried next time (the
+  /// user may have granted the permission in between).
   @override
   Future<bool> initialize() async {
+    if (_initialized) return true;
     try {
-      return await _speech.initialize(
+      _initialized = await _speech.initialize(
         onError: (e) => _onError?.call(e.errorMsg),
       );
     } on Object {
-      return false;
+      _initialized = false;
     }
+    return _initialized;
   }
 
   @override

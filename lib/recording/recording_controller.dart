@@ -34,7 +34,10 @@ class RecordingController extends ChangeNotifier {
 
   RecordingState _state = RecordingState.idle;
   RecordingProblem? _problem;
-  String _partialText = '';
+  // Android's recognizer restarts its partial results after a pause, so what
+  // it reports is only the current segment. Earlier segments are kept here.
+  String _committed = '';
+  String _segment = '';
   String? _problemDetail;
   DateTime? _startedAt;
   Completer<void>? _finalResult;
@@ -44,7 +47,7 @@ class RecordingController extends ChangeNotifier {
   bool get isListening => _state == RecordingState.listening;
 
   /// The transcript so far while listening.
-  String get partialText => _partialText;
+  String get partialText => _join(_committed, _segment);
 
   /// Why the last attempt failed, cleared when a new recording starts.
   RecordingProblem? get problem => _problem;
@@ -60,7 +63,8 @@ class RecordingController extends ChangeNotifier {
     if (_state != RecordingState.idle) return;
     _problem = null;
     _problemDetail = null;
-    _partialText = '';
+    _committed = '';
+    _segment = '';
     lastEntry = null;
 
     if (!settings.isConfigured) return _fail(RecordingProblem.notConfigured);
@@ -96,7 +100,14 @@ class RecordingController extends ChangeNotifier {
 
   void _onResult(String text, bool isFinal) {
     if (_state == RecordingState.idle) return;
-    _partialText = text;
+    if (_committed.isNotEmpty &&
+        text.toLowerCase().startsWith(_committed.toLowerCase())) {
+      // The recognizer reported the whole dictation again: it replaces ours.
+      _committed = '';
+    } else if (_startsNewSegment(text)) {
+      _committed = _join(_committed, _segment);
+    }
+    _segment = text;
     notifyListeners();
     if (!isFinal) return;
     final waiting = _finalResult;
@@ -109,10 +120,24 @@ class RecordingController extends ChangeNotifier {
     }
   }
 
+  /// True if [text] is not a continuation or revision of the current segment,
+  /// i.e. the recognizer started over after a pause. A revision keeps its first
+  /// word and does not collapse to a fraction of the previous length.
+  bool _startsNewSegment(String text) {
+    final old = _segment.trim();
+    final next = text.trim();
+    if (old.isEmpty || next.isEmpty) return false;
+    String first(String t) => t.split(RegExp(r'\s+')).first.toLowerCase();
+    return first(old) != first(next) || next.length < old.length / 2;
+  }
+
+  static String _join(String a, String b) =>
+      [a, b].where((t) => t.trim().isNotEmpty).join(' ');
+
   void _onError(String message) {
     if (_state == RecordingState.idle) return;
     // Keep whatever was heard: an error after speech should not lose it.
-    if (_partialText.trim().isNotEmpty) {
+    if (partialText.trim().isNotEmpty) {
       _state = RecordingState.finishing;
       _pendingFinish = _finish();
       return;
@@ -123,7 +148,7 @@ class RecordingController extends ChangeNotifier {
 
   Future<void> _finish() async {
     if (_state == RecordingState.idle) return;
-    final text = _partialText.trim();
+    final text = partialText.trim();
     final startedAt = _startedAt!;
     _reset();
     if (text.isEmpty) return _fail(RecordingProblem.noSpeech);
@@ -139,7 +164,8 @@ class RecordingController extends ChangeNotifier {
 
   void _reset() {
     _state = RecordingState.idle;
-    _partialText = '';
+    _committed = '';
+    _segment = '';
     _startedAt = null;
     _finalResult = null;
     notifyListeners();
