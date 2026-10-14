@@ -66,6 +66,8 @@ flutter analyze
 flutter build apk
 ```
 
+For quick local testing there is also a Windows runner (`flutter run -d windows`). It is not built in CI and not a supported target: speech recognition and the widget are Android only, so recording reports the recognizer as unavailable there, but browsing, editing, search and import work.
+
 Speech recognition and the widget need a real device or an emulator with Google services; they cannot be exercised by the unit and widget tests.
 
 ### Project layout
@@ -77,6 +79,7 @@ lib/
   recording/   recording state machine, speech service, record requests
   ui/          screens: onboarding, list, edit, SensorKit picker
 android/       manifest, home screen widget, deep link handling
+windows/       generated runner for local testing only
 test/          unit and widget tests, mirroring lib/
 ```
 

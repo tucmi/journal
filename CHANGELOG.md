@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First-launch onboarding that explains the app, asks for the SensorKit id and requests the microphone permission.
 - Project logo in the onboarding and the list's app bar.
 - GitHub Actions CI that checks formatting, analyzes, runs the tests with coverage and builds the Android debug APK on every push to `main` and every pull request, plus Dependabot updates for pub packages and workflow actions.
+- Windows runner for local testing (not built in CI, not a supported target).
 - README, MIT license, contributing guide and this changelog.
 
 [Unreleased]: https://github.com/tucmi/journal/commits/main
