@@ -29,7 +29,7 @@ flutter test
 1. Create a branch from `main`.
 2. Keep the change focused: one concern per pull request.
 3. Add or update tests. Logic lives in plain classes (`lib/data`, `lib/recording`) that are tested without a device; screens are covered by widget tests. Platform plugins sit behind small interfaces (`SpeechService`, `FileTransfer`, `RecordRequests`) so tests can use fakes.
-4. Run the checks, which must all pass:
+4. Run the checks, which must all pass (the CI workflow runs the same ones, and also builds the Android debug APK, on every push to `main` and every pull request):
 
    ```sh
    dart format lib test
